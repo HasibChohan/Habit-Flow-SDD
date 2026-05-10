@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HabitFlow – Smart Habit Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:#0D0D1A;color:#fff;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0D0D1A}::-webkit-scrollbar-thumb{background:#2A2A45;border-radius:3px}
+.mesh{background:#0D0D1A;background-image:radial-gradient(at 20% 50%,rgba(108,99,255,.13) 0,transparent 50%),radial-gradient(at 80% 20%,rgba(255,101,132,.08) 0,transparent 50%),radial-gradient(at 50% 85%,rgba(67,233,123,.06) 0,transparent 50%)}
+.glass{background:rgba(26,26,46,.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(108,99,255,.15)}
+.glass-card{background:rgba(255,255,255,.03);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.07)}
+.glass-done{background:rgba(108,99,255,.07);border:1px solid rgba(108,99,255,.28)!important}
+.grad-text{background:linear-gradient(135deg,#6C63FF,#FF6584);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.font-display{font-family:'Syne',sans-serif}
+.font-mono{font-family:'JetBrains Mono',monospace}
+.btn-primary{background:#6C63FF;color:#fff;font-family:'Syne',sans-serif;font-weight:600;padding:10px 20px;border:none;border-radius:12px;cursor:pointer;font-size:13px;box-shadow:0 4px 15px rgba(108,99,255,.35);transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(108,99,255,.45);background:#7B74FF}
+.btn-primary:active{transform:scale(.96)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;color:#8888AA;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 18px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;transition:all .2s}
+.btn-ghost:hover{color:#fff;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18)}
+.btn-icon{background:transparent;border:none;cursor:pointer;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#8888AA;transition:all .2s;padding:0}
+.btn-icon:hover{color:#fff;background:rgba(255,255,255,.08)}
+.btn-icon.del:hover{color:#f87171;background:rgba(248,113,113,.1)}
+.inp{width:100%;background:#13131F;border:1px solid #2A2A45;border-radius:12px;padding:12px 16px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:all .2s}
+.inp::placeholder{color:#8888AA}
+.inp:focus{border-color:#6C63FF;box-shadow:0 0 0 3px rgba(108,99,255,.15)}
+textarea.inp{resize:none}
+.prog-track{background:#2A2A45;border-radius:9999px;height:5px;overflow:hidden}
+.prog-fill{height:100%;border-radius:9999px;background:linear-gradient(90deg,#6C63FF,#FF6584);transition:width .7s cubic-bezier(.34,1.56,.64,1)}
+nav{position:fixed;top:0;left:0;right:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.05)}
+.nav-link{padding:8px 14px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:#8888AA;transition:all .2s}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,.05)}
+.nav-link.active{color:#6C63FF;background:rgba(108,99,255,.15);border:1px solid rgba(108,99,255,.25)}
+.overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(13,13,26,.88);backdrop-filter:blur(8px)}
+.stat-card{border-radius:16px;padding:18px 20px;transition:transform .2s}
+.stat-card:hover{transform:translateY(-2px)}
+.habit-card{border-radius:16px;padding:18px 20px;transition:all .25s}
+.cal-day{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;transition:all .2s}
+.cal-day.full{background:#6C63FF;color:#fff;font-weight:700}
+.cal-day.partial{background:rgba(108,99,255,.3);color:#A89FFF}
+.cal-day.none{background:rgba(255,255,255,.04);color:#8888AA}
+.cal-day.tring{outline:2px solid #6C63FF;outline-offset:2px}
+.ach-unlocked{border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;border:1px solid rgba(108,99,255,.28);background:rgba(108,99,255,.07)}
+.ach-locked{border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)}
+.label{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8888AA;margin-bottom:8px;display:block}
+.emoji-btn{width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.04);cursor:pointer;font-size:18px;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.emoji-btn:hover{background:rgba(255,255,255,.1)}
+.emoji-btn.sel{background:rgba(108,99,255,.3);border-color:rgba(108,99,255,.55);transform:scale(1.1)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.88) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.3)}100%{transform:scale(1)}}
+.fu{animation:fadeUp .4s ease both}
+.fi{animation:fadeIn .3s ease both}
+.si{animation:scaleIn .3s cubic-bezier(.34,1.56,.64,1) both}
+.fl{animation:float 5s ease-in-out infinite}
+.pop{animation:pop .35s ease}
+</style>
+</head>
+<body class="mesh">
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useCallback}=React;
+
+const todayStr=()=>new Date().toISOString().split('T')[0];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function calcStreak(dates=[]){
+  if(!dates.length)return{cur:0,best:0};
+  const s=[...new Set(dates)].sort((a,b)=>b.localeCompare(a));
+  const today=todayStr();
+  const yd=new Date();yd.setDate(yd.getDate()-1);
+  const ydStr=yd.toISOString().split('T')[0];
+  let cur=0;
+  if(s[0]===today||s[0]===ydStr){
+    let d=new Date(s[0]+'T00:00:00');
+    for(let i=0;i<s.length;i++){
+      if(s[i]===d.toISOString().split('T')[0]){cur++;d.setDate(d.getDate()-1);}else break;
+    }
+  }
+  let best=0,run=1;
+  for(let i=0;i<s.length-1;i++){
+    const diff=(new Date(s[i]+'T00:00:00')-new Date(s[i+1]+'T00:00:00'))/(864e5);
+    if(diff===1){run++;best=Math.max(best,run);}else{best=Math.max(best,run);run=1;}
+  }
+  return{cur,best:Math.max(best,run,cur)};
+}
+function compRate(dates=[],days=30){
+  const t=new Date();let c=0;
+  for(let i=0;i<days;i++){const d=new Date(t);d.setDate(d.getDate()-i);if(dates.includes(d.toISOString().split('T')[0]))c++;}
+  return Math.round((c/days)*100);
+}
+const isDone=h=>h.dates?.includes(todayStr())??false;
+const genId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const load=()=>{try{const r=localStorage.getItem('hf3');return r?JSON.parse(r):[];}catch{return[];}};
+const save=h=>{try{localStorage.setItem('hf3',JSON.stringify(h));}catch{}};
+
+const QUOTES=[
+  {t:"We are what we repeatedly do. Excellence is not an act, but a habit.",a:"Aristotle"},
+  {t:"Motivation gets you started. Habit keeps you going.",a:"Jim Ryun"},
+  {t:"The secret of your future is hidden in your daily routine.",a:"Mike Murdock"},
+  {t:"Small daily improvements are the key to staggering long-term results.",a:"Robin Sharma"},
+  {t:"You do not rise to your goals. You fall to your systems.",a:"James Clear"},
+  {t:"Long-term consistency beats short-term intensity.",a:"Bruce Lee"},
+  {t:"Success is the sum of small efforts repeated day in and day out.",a:"Robert Collier"},
+  {t:"First forget inspiration. Habit is more dependable.",a:"Octavia Butler"},
+];
+const EMOJIS=['💪','📚','🏃','🧘','💧','🍎','😴','✍️','🎯','🧠','🎨','🎵','🌿','⚡','🔥','🌟'];
+const ACHS=[
+  {id:'a1',icon:'🌱',title:'First Step',desc:'Created your first habit',chk:h=>h.length>=1},
+  {id:'a2',icon:'🔥',title:'On Fire',desc:'7-day streak on any habit',chk:h=>h.some(x=>calcStreak(x.dates).cur>=7)},
+  {id:'a3',icon:'💎',title:'Diamond Mind',desc:'30-day streak on any habit',chk:h=>h.some(x=>calcStreak(x.dates).cur>=30)},
+  {id:'a4',icon:'⚡',title:'Power User',desc:'Managing 5+ habits',chk:h=>h.length>=5},
+  {id:'a5',icon:'✨',title:'Perfect Day',desc:'All habits done today',chk:h=>h.length>0&&h.every(isDone)},
+  {id:'a6',icon:'💯',title:'Century Club',desc:'100 total completions',chk:h=>h.reduce((s,x)=>s+(x.dates?.length||0),0)>=100},
+];
+
+/* tiny SVG icons */
+const I={
+  zap:()=><svg width="16"height="16"viewBox="0 0 24 24"fill="white"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>,
+  plus:()=><svg width="14"height="14"viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2.5"strokeLinecap="round"><line x1="12"y1="5"x2="12"y2="19"/><line x1="5"y1="12"x2="19"y2="12"/></svg>,
+  edit:()=><svg width="13"height="13"viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>,
+  trash:()=><svg width="13"height="13"viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>,
+  chkOn:()=><svg width="26"height="26"viewBox="0 0 24 24"fill="none"stroke="#6C63FF"strokeWidth="2"strokeLinecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+  chkOff:()=><svg width="26"height="26"viewBox="0 0 24 24"fill="none"stroke="#2A2A45"strokeWidth="2"><circle cx="12"cy="12"r="10"/></svg>,
+  flame:()=><svg width="13"height="13"viewBox="0 0 24 24"fill="#f97316"><path d="M12 2s-6 6-6 12a6 6 0 0 0 12 0c0-2-1-4-3-6 0 2-1 3-3 3s-2-2-2-4c0-2 2-5 2-5z"/></svg>,
+  trophy:()=><svg width="12"height="12"viewBox="0 0 24 24"fill="none"stroke="#FBBF24"strokeWidth="2"strokeLinecap="round"><path d="M6 9H4a2 2 0 0 1-2-2V5h4M18 9h2a2 2 0 0 0 2-2V5h-4M12 17v4M8 21h8M12 17a5 5 0 0 0 5-5V3H7v9a5 5 0 0 0 5 5z"/></svg>,
+  refresh:()=><svg width="13"height="13"viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>,
+  quote:()=><svg width="14"height="14"viewBox="0 0 24 24"fill="#6C63FF"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1zm12 0c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>,
+  lock:()=><svg width="18"height="18"viewBox="0 0 24 24"fill="none"stroke="#2A2A45"strokeWidth="2"strokeLinecap="round"><rect x="3"y="11"width="18"height="11"rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  menu:()=><svg width="16"height="16"viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"><line x1="3"y1="6"x2="21"y2="6"/><line x1="3"y1="12"x2="21"y2="12"/><line x1="3"y1="18"x2="21"y2="18"/></svg>,
+  x:()=><svg width="16"height="16"viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"><line x1="18"y1="6"x2="6"y2="18"/><line x1="6"y1="6"x2="18"y2="18"/></svg>,
+  chL:()=><svg width="18"height="18"viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>,
+  chR:()=><svg width="18"height="18"viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>,
+  spark:()=><svg width="15"height="15"viewBox="0 0 24 24"fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>,
+};
+
+function QuoteCard(){
+  const [qi,setQi]=useState(new Date().getDate()%QUOTES.length);
+  const [k,setK]=useState(0);
+  const q=QUOTES[qi];
+  return(
+    <div className="glass" style={{borderRadius:16,padding:'16px 20px',position:'relative',overflow:'hidden',border:'1px solid rgba(108,99,255,.18)'}}>
+      <div style={{position:'absolute',top:0,right:0,width:90,height:90,borderRadius:'50%',background:'radial-gradient(circle,rgba(108,99,255,.18),transparent)',transform:'translate(30%,-30%)',pointerEvents:'none'}}/>
+      <div style={{display:'flex',gap:12,alignItems:'flex-start'}}>
+        <div style={{width:32,height:32,borderRadius:10,background:'rgba(108,99,255,.15)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:2}}><I.quote/></div>
+        <div style={{flex:1}}>
+          <p key={k} className="fi" style={{color:'rgba(255,255,255,.82)',fontSize:13,lineHeight:1.65,fontStyle:'italic'}}>"{q.t}"</p>
+          <p className="font-display" style={{color:'#8888AA',fontSize:11,fontWeight:600,marginTop:5}}>— {q.a}</p>
+        </div>
+        <button className="btn-icon" onClick={()=>{setQi(i=>(i+1)%QUOTES.length);setK(k=>k+1)}}><I.refresh/></button>
+      </div>
+    </div>
+  );
+}
+
+function StatsBar({habits}){
+  const total=habits.length;
+  const done=habits.filter(isDone).length;
+  const pct=total?Math.round((done/total)*100):0;
+  const best=habits.reduce((m,h)=>Math.max(m,calcStreak(h.dates).cur),0);
+  const tot=habits.reduce((s,h)=>s+(h.dates?.length||0),0);
+  const st=[
+    {em:'✅',l:'Today',v:`${done}/${total}`,s:`${pct}% done`,c:'#6C63FF',gl:'rgba(108,99,255,.2)'},
+    {em:'🔥',l:'Best Streak',v:`${best}d`,s:'consecutive',c:'#f97316',gl:'rgba(249,115,22,.2)'},
+    {em:'📋',l:'Habits',v:total,s:'tracked',c:'#FBBF24',gl:'rgba(251,191,36,.15)'},
+    {em:'⭐',l:'Completions',v:tot,s:'all-time',c:'#43E97B',gl:'rgba(67,233,123,.12)'},
+  ];
+  return(
+    <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
+      {st.map((s,i)=>(
+        <div key={i} className="stat-card glass fu" style={{animationDelay:`${i*.07}s`,boxShadow:`0 4px 20px ${s.gl}`}}>
+          <div style={{fontSize:22,marginBottom:8}}>{s.em}</div>
+          <div className="font-display" style={{fontSize:22,fontWeight:800,color:'#fff',lineHeight:1}}>{s.v}</div>
+          <div style={{fontSize:11,color:'#8888AA',marginTop:4}}>{s.s}</div>
+          <div className="font-display" style={{fontSize:10,fontWeight:700,color:s.c,marginTop:2,textTransform:'uppercase',letterSpacing:'.06em'}}>{s.l}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HabitCard({habit,index,onToggle,onEdit,onDelete}){
+  const done=isDone(habit);
+  const {cur,best}=calcStreak(habit.dates);
+  const total=habit.dates?.length||0;
+  const [popped,setPopped]=useState(false);
+  function toggle(){setPopped(true);setTimeout(()=>setPopped(false),400);onToggle(habit.id);}
+  return(
+    <div className={`habit-card fu ${done?'glass-done':'glass-card'}`} style={{animationDelay:`${index*.06}s`}}>
+      <div style={{display:'flex',gap:14,alignItems:'flex-start'}}>
+        <div style={{width:46,height:46,borderRadius:12,background:done?'rgba(108,99,255,.22)':'rgba(255,255,255,.05)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0,transition:'all .3s',transform:done?'scale(1.08)':'scale(1)'}}>
+          {habit.emoji}
+        </div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:8}}>
+            <div style={{minWidth:0}}>
+              <div className="font-display" style={{fontSize:14,fontWeight:700,color:done?'#fff':'rgba(255,255,255,.85)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{habit.name}</div>
+              {habit.desc&&<div style={{fontSize:11,color:'#8888AA',marginTop:2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{habit.desc}</div>}
+            </div>
+            <div style={{display:'flex',gap:3,flexShrink:0}}>
+              <button className="btn-icon" onClick={()=>onEdit(habit)}><I.edit/></button>
+              <button className="btn-icon del" onClick={()=>onDelete(habit.id)}><I.trash/></button>
+            </div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:12,marginTop:10}}>
+            <span style={{display:'flex',alignItems:'center',gap:4,color:cur>0?'#f97316':'#8888AA'}}><I.flame/><span className="font-mono" style={{fontSize:11}}>{cur}d</span></span>
+            <span style={{display:'flex',alignItems:'center',gap:4,color:'#8888AA'}}><I.trophy/><span className="font-mono" style={{fontSize:11}}>Best:{best}</span></span>
+            <span className="font-mono" style={{fontSize:11,color:'#8888AA',marginLeft:'auto'}}>{total} total</span>
+          </div>
+          <div className="prog-track" style={{marginTop:10}}>
+            <div className="prog-fill" style={{width:done?'100%':`${Math.min((cur/30)*100,88)}%`}}/>
+          </div>
+        </div>
+        <button onClick={toggle} className={popped?'pop':''} style={{flexShrink:0,background:'none',border:'none',cursor:'pointer',padding:2,marginTop:2}}>
+          {done?<span style={{filter:'drop-shadow(0 0 8px rgba(108,99,255,.7))'}}><I.chkOn/></span>:<I.chkOff/>}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function HabitForm({habit,onSave,onClose}){
+  const [name,setName]=useState(habit?.name||'');
+  const [emoji,setEmoji]=useState(habit?.emoji||'💪');
+  const [desc,setDesc]=useState(habit?.desc||'');
+  useEffect(()=>{const h=e=>{if(e.key==='Escape')onClose();};window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h);},[]);
+  function submit(e){e.preventDefault();if(!name.trim())return;onSave({name:name.trim(),emoji,desc:desc.trim()});onClose();}
+  return(
+    <div className="overlay fi" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="glass si" style={{borderRadius:20,padding:24,width:'100%',maxWidth:420,border:'1px solid rgba(108,99,255,.3)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:22}}>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <div style={{width:36,height:36,borderRadius:10,background:'rgba(108,99,255,.2)',display:'flex',alignItems:'center',justifyContent:'center'}}><I.plus/></div>
+            <div>
+              <div className="font-display" style={{fontSize:15,fontWeight:700,color:'#fff'}}>{habit?'Edit Habit':'New Habit'}</div>
+              <div style={{fontSize:11,color:'#8888AA'}}>{habit?'Update details':'Start a new routine'}</div>
+            </div>
+          </div>
+          <button className="btn-icon" onClick={onClose}><I.x/></button>
+        </div>
+        <form onSubmit={submit}>
+          <div style={{marginBottom:16}}>
+            <span className="label">Icon</span>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(8,1fr)',gap:6}}>
+              {EMOJIS.map(e=><button key={e} type="button" onClick={()=>setEmoji(e)} className={`emoji-btn ${emoji===e?'sel':''}`}>{e}</button>)}
+            </div>
+          </div>
+          <div style={{marginBottom:14}}>
+            <span className="label">Habit Name *</span>
+            <input className="inp" placeholder="e.g. Morning Run, Read 30 mins..." value={name} onChange={e=>setName(e.target.value)} autoFocus maxLength={50}/>
+          </div>
+          <div style={{marginBottom:20}}>
+            <span className="label">Description (optional)</span>
+            <textarea className="inp" rows={2} placeholder="Why does this matter to you?" value={desc} onChange={e=>setDesc(e.target.value)} maxLength={120}/>
+          </div>
+          <div style={{display:'flex',gap:10}}>
+            <button type="button" onClick={onClose} className="btn-ghost" style={{flex:1}}>Cancel</button>
+            <button type="submit" disabled={!name.trim()} className="btn-primary" style={{flex:1,justifyContent:'center'}}>{habit?'Save Changes':'Add Habit'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function Dashboard({habits,onAdd,onEdit,onDelete,onToggle}){
+  return(
+    <div>
+      <QuoteCard/>
+      <div style={{marginTop:14}}><StatsBar habits={habits}/></div>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',margin:'22px 0 12px'}}>
+        <div>
+          <div className="font-display" style={{fontSize:20,fontWeight:800,color:'#fff'}}>My Habits</div>
+          <div style={{fontSize:12,color:'#8888AA',marginTop:3}}>{habits.length===0?'No habits yet — add your first one!':habits.length+' habit'+(habits.length===1?'':'s')+' tracked'}</div>
+        </div>
+        <button className="btn-primary" onClick={onAdd}><I.plus/>Add Habit</button>
+      </div>
+      {habits.length===0?(
+        <div className="glass-card" style={{borderRadius:16,padding:48,textAlign:'center',border:'1px dashed rgba(255,255,255,.1)'}}>
+          <div className="fl" style={{fontSize:48,display:'inline-block',marginBottom:14}}>✨</div>
+          <div className="font-display" style={{fontSize:18,fontWeight:700,color:'#fff',marginBottom:8}}>Start Your Journey</div>
+          <div style={{fontSize:13,color:'#8888AA',marginBottom:22,maxWidth:260,margin:'0 auto 22px'}}>Every great routine starts with one habit.</div>
+          <button className="btn-primary" onClick={onAdd} style={{margin:'0 auto'}}><I.spark/>Add Your First Habit</button>
+        </div>
+      ):(
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {habits.map((h,i)=><HabitCard key={h.id} habit={h} index={i} onToggle={onToggle} onEdit={onEdit} onDelete={onDelete}/>)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Analytics({habits}){
+  if(!habits.length)return<div style={{textAlign:'center',paddingTop:80}}><div style={{fontSize:48,marginBottom:14}}>📊</div><div className="font-display" style={{color:'#fff',fontSize:18,fontWeight:700,marginBottom:8}}>No Data Yet</div><div style={{color:'#8888AA',fontSize:13}}>Track habits to see analytics.</div></div>;
+  const today=todayStr();
+  const d7=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(6-i));return{l:WD[d.getDay()][0],s:d.toISOString().split('T')[0],isT:d.toISOString().split('T')[0]===today};});
+  return(
+    <div>
+      <div className="font-display" style={{fontSize:20,fontWeight:800,color:'#fff',marginBottom:4}}>Analytics</div>
+      <div style={{fontSize:12,color:'#8888AA',marginBottom:20}}>Your habit performance at a glance</div>
+      <div style={{display:'flex',flexDirection:'column',gap:14}}>
+        {habits.map((h,hi)=>{
+          const r7=compRate(h.dates,7),r30=compRate(h.dates,30);
+          const {cur,best}=calcStreak(h.dates);
+          return(
+            <div key={h.id} className="glass-card fu" style={{borderRadius:16,padding:18,animationDelay:`${hi*.07}s`}}>
+              <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:14}}>
+                <span style={{fontSize:22}}>{h.emoji}</span>
+                <div style={{flex:1}}>
+                  <div className="font-display" style={{fontSize:13,fontWeight:700,color:'#fff'}}>{h.name}</div>
+                  <div className="font-mono" style={{fontSize:11,color:'#8888AA'}}>{h.dates?.length||0} total</div>
+                </div>
+                <div style={{textAlign:'right'}}>
+                  <div className="font-mono" style={{fontSize:20,fontWeight:700,color:'#6C63FF'}}>{r30}%</div>
+                  <div style={{fontSize:10,color:'#8888AA'}}>30-day</div>
+                </div>
+              </div>
+              <span className="label">Last 7 Days</span>
+              <div style={{display:'flex',gap:4,alignItems:'flex-end',marginBottom:14}}>
+                {d7.map((d,i)=>{
+                  const dn=h.dates?.includes(d.s);
+                  return(
+                    <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:5}}>
+                      <div style={{width:'100%',height:28,borderRadius:6,background:dn?'#6C63FF':d.isT?'rgba(108,99,255,.18)':'rgba(255,255,255,.05)',border:d.isT&&!dn?'1px solid rgba(108,99,255,.3)':'none'}}/>
+                      <span className="font-mono" style={{fontSize:10,color:d.isT?'#6C63FF':'#8888AA'}}>{d.l}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8}}>
+                {[{l:'7-Day',v:`${r7}%`},{l:'Streak',v:`${cur}d 🔥`},{l:'Best',v:`${best}d 🏆`}].map(s=>(
+                  <div key={s.l} style={{background:'rgba(255,255,255,.03)',borderRadius:10,padding:'10px 8px',textAlign:'center'}}>
+                    <div className="font-mono" style={{fontSize:13,fontWeight:700,color:'#fff'}}>{s.v}</div>
+                    <div style={{fontSize:10,color:'#8888AA',marginTop:3}}>{s.l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CalendarView({habits}){
+  const now=new Date();
+  const [yr,setYr]=useState(now.getFullYear());
+  const [mo,setMo]=useState(now.getMonth());
+  const today=todayStr();
+  function prev(){if(mo===0){setMo(11);setYr(y=>y-1);}else setMo(m=>m-1);}
+  function next(){if(mo===11){setMo(0);setYr(y=>y+1);}else setMo(m=>m+1);}
+  const dim=new Date(yr,mo+1,0).getDate();
+  const fd=new Date(yr,mo,1).getDay();
+  function status(d){
+    const ds=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if(!habits.length)return'empty';
+    const done=habits.filter(h=>h.dates?.includes(ds)).length;
+    return done===0?'none':done===habits.length?'full':'partial';
+  }
+  const cells=[];
+  for(let i=0;i<fd;i++)cells.push(null);
+  for(let d=1;d<=dim;d++)cells.push(d);
+  return(
+    <div>
+      <div className="font-display" style={{fontSize:20,fontWeight:800,color:'#fff',marginBottom:4}}>Calendar</div>
+      <div style={{fontSize:12,color:'#8888AA',marginBottom:20}}>Your habit completion history</div>
+      <div className="glass" style={{borderRadius:16,padding:20}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}}>
+          <button className="btn-icon" onClick={prev}><I.chL/></button>
+          <div className="font-display" style={{fontSize:15,fontWeight:700,color:'#fff'}}>{MONTHS[mo]} {yr}</div>
+          <button className="btn-icon" onClick={next}><I.chR/></button>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3,marginBottom:6}}>
+          {WD.map(d=><div key={d} style={{textAlign:'center',fontSize:10,fontFamily:"'Syne',sans-serif",fontWeight:700,color:'#8888AA',textTransform:'uppercase',padding:'3px 0'}}>{d[0]}</div>)}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:3}}>
+          {cells.map((day,i)=>{
+            if(!day)return<div key={`e${i}`}/>;
+            const ds=`${yr}-${String(mo+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+            const isT=ds===today;
+            const st=status(day);
+            return<div key={day} className={`cal-day ${st} ${isT?'tring':''}`}>{day}</div>;
+          })}
+        </div>
+        <div style={{display:'flex',gap:14,marginTop:14,paddingTop:12,borderTop:'1px solid rgba(255,255,255,.07)'}}>
+          {[{c:'#6C63FF',l:'All done'},{c:'rgba(108,99,255,.35)',l:'Partial'},{c:'rgba(255,255,255,.06)',l:'None'}].map(x=>(
+            <div key={x.l} style={{display:'flex',alignItems:'center',gap:6}}>
+              <div style={{width:10,height:10,borderRadius:3,background:x.c}}/>
+              <span style={{fontSize:11,color:'#8888AA'}}>{x.l}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AchievementsView({habits}){
+  const unlocked=ACHS.filter(a=>a.chk(habits));
+  const locked=ACHS.filter(a=>!a.chk(habits));
+  return(
+    <div>
+      <div className="font-display" style={{fontSize:20,fontWeight:800,color:'#fff',marginBottom:4}}>Achievements</div>
+      <div style={{fontSize:12,color:'#8888AA',marginBottom:14}}>{unlocked.length} of {ACHS.length} unlocked</div>
+      <div className="glass" style={{borderRadius:12,padding:'12px 16px',marginBottom:18}}>
+        <div style={{display:'flex',justifyContent:'space-between',fontSize:11,marginBottom:5}}>
+          <span style={{color:'#8888AA'}}>Progress</span>
+          <span className="font-mono" style={{color:'#6C63FF'}}>{unlocked.length}/{ACHS.length}</span>
+        </div>
+        <div className="prog-track"><div className="prog-fill" style={{width:`${(unlocked.length/ACHS.length)*100}%`}}/></div>
+      </div>
+      {unlocked.length>0&&<div style={{marginBottom:14}}>
+        <span className="label" style={{color:'rgba(255,255,255,.4)'}}>Unlocked</span>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(190px,1fr))',gap:10}}>
+          {unlocked.map((a,i)=>(
+            <div key={a.id} className={`ach-unlocked fu`} style={{animationDelay:`${i*.06}s`}}>
+              <div style={{width:44,height:44,borderRadius:12,background:'rgba(108,99,255,.2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,flexShrink:0,boxShadow:'0 0 16px rgba(108,99,255,.35)'}}>{a.icon}</div>
+              <div><div className="font-display" style={{fontSize:13,fontWeight:700,color:'#fff'}}>{a.title}</div><div style={{fontSize:11,color:'#8888AA',marginTop:2}}>{a.desc}</div></div>
+            </div>
+          ))}
+        </div>
+      </div>}
+      {locked.length>0&&<div>
+        <span className="label" style={{color:'rgba(255,255,255,.2)'}}>Locked</span>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(190px,1fr))',gap:10}}>
+          {locked.map(a=>(
+            <div key={a.id} className="ach-locked">
+              <div style={{width:44,height:44,borderRadius:12,background:'rgba(255,255,255,.05)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><I.lock/></div>
+              <div><div className="font-display" style={{fontSize:13,fontWeight:700,color:'rgba(255,255,255,.25)'}}>{a.title}</div><div style={{fontSize:11,color:'rgba(255,255,255,.2)',marginTop:2}}>{a.desc}</div></div>
+            </div>
+          ))}
+        </div>
+      </div>}
+      {!unlocked.length&&<div style={{textAlign:'center',paddingTop:40}}><div style={{fontSize:44,marginBottom:12}}>🔒</div><div className="font-display" style={{color:'#fff',fontSize:16,fontWeight:700}}>No Achievements Yet</div><div style={{color:'#8888AA',fontSize:12,marginTop:6}}>Start tracking to earn badges!</div></div>}
+    </div>
+  );
+}
+
+function Navbar({view,setView}){
+  const [open,setOpen]=useState(false);
+  const navs=[{id:'dashboard',l:'Dashboard'},{id:'analytics',l:'Analytics'},{id:'calendar',l:'Calendar'},{id:'achievements',l:'Achievements'}];
+  return(
+    <nav className="glass">
+      <div style={{maxWidth:780,margin:'0 auto',padding:'0 20px'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',height:60}}>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <div style={{width:32,height:32,borderRadius:10,background:'linear-gradient(135deg,#6C63FF,#FF6584)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 0 18px rgba(108,99,255,.5)'}}><I.zap/></div>
+            <span className="font-display" style={{fontSize:17,fontWeight:800,letterSpacing:'-.01em'}}>Habit<span className="grad-text">Flow</span></span>
+          </div>
+          <div id="desknav" style={{display:'flex',gap:4}}>
+            {navs.map(n=><button key={n.id} onClick={()=>setView(n.id)} className={`nav-link ${view===n.id?'active':''}`}>{n.l}</button>)}
+          </div>
+          <button className="btn-icon" id="mobbtn" onClick={()=>setOpen(!open)}>{open?<I.x/>:<I.menu/>}</button>
+        </div>
+        {open&&<div style={{paddingBottom:12,display:'flex',flexDirection:'column',gap:4}}>
+          {navs.map(n=><button key={n.id} onClick={()=>{setView(n.id);setOpen(false);}} className={`nav-link ${view===n.id?'active':''}`} style={{textAlign:'left'}}>{n.l}</button>)}
+        </div>}
+      </div>
+      <style>{`
+        #mobbtn{display:none}
+        @media(max-width:640px){#desknav{display:none!important}#mobbtn{display:flex!important}}
+      `}</style>
+    </nav>
+  );
+}
+
+function App(){
+  const [habits,setHabits]=useState(load);
+  const [view,setView]=useState('dashboard');
+  const [form,setForm]=useState(null);
+  useEffect(()=>save(habits),[habits]);
+
+  const toggle=useCallback(id=>{
+    const t=todayStr();
+    setHabits(prev=>prev.map(h=>{
+      if(h.id!==id)return h;
+      const dates=h.dates||[];
+      return{...h,dates:dates.includes(t)?dates.filter(d=>d!==t):[...dates,t]};
+    }));
+  },[]);
+
+  function handleSave({name,emoji,desc}){
+    if(form==='add'){setHabits(prev=>[{id:genId(),name,emoji,desc,dates:[],createdAt:new Date().toISOString()},...prev]);}
+    else{setHabits(prev=>prev.map(h=>h.id===form.id?{...h,name,emoji,desc}:h));}
+  }
+
+  function handleDelete(id){
+    if(window.confirm('Delete this habit? All progress will be lost.'))
+      setHabits(prev=>prev.filter(h=>h.id!==id));
+  }
+
+  const views={
+    dashboard:<Dashboard habits={habits} onAdd={()=>setForm('add')} onEdit={setForm} onDelete={handleDelete} onToggle={toggle}/>,
+    analytics:<Analytics habits={habits}/>,
+    calendar:<CalendarView habits={habits}/>,
+    achievements:<AchievementsView habits={habits}/>,
+  };
+
+  return(
+    <>
+      <Navbar view={view} setView={setView}/>
+      <main style={{maxWidth:780,margin:'0 auto',padding:'76px 20px 60px'}}>
+        <div key={view} className="fu">{views[view]}</div>
+      </main>
+      <div style={{textAlign:'center',paddingBottom:24,color:'#8888AA',fontSize:11,fontFamily:"'JetBrains Mono',monospace"}}>
+        HabitFlow — Built by Muhammad Haseeb ⚡
+      </div>
+      {form&&<HabitForm habit={form==='add'?null:form} onSave={handleSave} onClose={()=>setForm(null)}/>}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
